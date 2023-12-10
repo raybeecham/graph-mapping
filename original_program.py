@@ -21,21 +21,11 @@ import dwave_networkx as dnx
 # Import dwave.system packages for the QPU
 from dwave.system import DWaveSampler, EmbeddingComposite
 
-from bokeh.io import output_file, show
-from bokeh.models import (Circle, HoverTool,MultiLine, Plot, EdgesAndLinkedNodes, NodesAndLinkedEdges)
-from bokeh.palettes import Spectral4
-from bokeh.plotting import from_networkx
-from bokeh.models import ColumnDataSource
+# Import matplotlib.pyplot to draw graphs on screen
+import matplotlib
+matplotlib.use("agg")
+import matplotlib.pyplot as plt
 
-# Define your data
-data = {
-    'x': [1, 2, 3, 4, 5],
-    'y': [1, 2, 3, 4, 5],
-    'color': ['red', 'blue', 'green', 'orange', 'purple']
-}
-
-# Create a ColumnDataSource from the data
-source = ColumnDataSource(data)
 
 # Set the solver we're going to use
 def set_sampler():
@@ -85,51 +75,23 @@ if __name__ == "__main__":
     print('Maximum independent set size found is', len(S))
     print(S)
 
-# Visualize the results
-subset_1 = G.subgraph(S)
-notS = list(set(G.nodes()) - set(S))
-subset_0 = G.subgraph(notS)
+    # Visualize the results
+    subset_1 = G.subgraph(S)
+    notS = list(set(G.nodes()) - set(S))
+    subset_0 = G.subgraph(notS)
+    pos = nx.spring_layout(G)
+    plt.figure()
 
-# Add a color attribute to the nodes in the graph
-for node in G.nodes():
-    G.nodes[node]['color'] = 'red' if node in S else 'blue'
+    # Save original problem graph
+    original_name = "antenna_plot_original.png"
+    nx.draw_networkx(G, pos=pos, with_labels=True)
+    plt.savefig(original_name, bbox_inches='tight')
 
-# Create a Bokeh plot with the spring layout
-plot = Plot(width=400, height=400,
-            x_range=Range1d(-1.1, 1.1), y_range=Range1d(-1.1, 1.1))
-plot.title.text = "Graph Interaction Demonstration"
+    # Save solution graph
+    # Note: red nodes are in the set, blue nodes are not
+    solution_name = "antenna_plot_solution.png"
+    nx.draw_networkx(subset_1, pos=pos, with_labels=True, node_color='r', font_color='k')
+    nx.draw_networkx(subset_0, pos=pos, with_labels=True, node_color='b', font_color='w')
+    plt.savefig(solution_name, bbox_inches='tight')
 
-# Create a graph renderer from the networkx graph
-graph_renderer = from_networkx(G, nx.spring_layout, scale=1, center=(0, 0))
-
-# Get the node indices
-node_indices = list(G.nodes)
-
-# Add the node indices to the graph renderer's node data
-graph_renderer.node_renderer.data_source.add(node_indices, 'index')
-
-# Create a hover tool that only applies to the graph renderer
-hover_tool = HoverTool(tooltips=[("index", "@index")], renderers=[graph_renderer.node_renderer])
-
-# Add the hover tool to the plot
-plot.add_tools(hover_tool)
-
-graph_renderer = from_networkx(G, nx.spring_layout, scale=1, center=(0, 0))
-
-# Provide node colors based on the solution
-graph_renderer.node_renderer.glyph = Circle(size=15, fill_color='color')
-
-graph_renderer.node_renderer.selection_glyph = Circle(size=15, fill_color=Spectral4[2])
-graph_renderer.node_renderer.hover_glyph = Circle(size=15, fill_color=Spectral4[1])
-
-graph_renderer.edge_renderer.glyph = MultiLine(line_color="#CCCCCC", line_alpha=0.8, line_width=1)
-graph_renderer.edge_renderer.selection_glyph = MultiLine(line_color=Spectral4[2], line_width=2)
-graph_renderer.edge_renderer.hover_glyph = MultiLine(line_color=Spectral4[1], line_width=2)
-
-graph_renderer.selection_policy = NodesAndLinkedEdges()
-graph_renderer.inspection_policy = EdgesAndLinkedNodes()
-
-plot.renderers.append(graph_renderer)
-
-output_file("interactive_graphs.html")
-# show(plot)
+    print("Your plots are saved to {} and {}".format(original_name, solution_name))
