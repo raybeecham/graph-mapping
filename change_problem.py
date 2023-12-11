@@ -40,6 +40,8 @@ def create_graph():
     G = nx.Graph()
 
     ## TODO:  Update graph to new problem graph
+    edges = [(0, 1), (1, 2), (2, 3), (1, 4), (2, 5), (3, 6), (4, 5), (5, 6), (6, 7)]
+    G.add_edges_from(edges)
 
     return G
 
@@ -56,8 +58,9 @@ def solve_problem(G, sampler):
     '''
 
     ## TODO:  Update dwave-networkx function to new problem function
-
-    return 
+    sampleset = dnx.min_vertex_cover(G, sampler, num_reads=10)
+    
+    return sampleset
 
 ## ------- Main program -------
 if __name__ == "__main__":

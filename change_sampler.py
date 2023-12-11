@@ -14,6 +14,7 @@
 
 # Import networkx for graph tools
 import networkx as nx
+import neal
 
 # Import dwave_networkx for d-wave graph tools/functions
 import dwave_networkx as dnx
@@ -28,8 +29,9 @@ def set_sampler():
     '''Returns a simulated annealing sampler'''
     
     ## TODO:  Import packages and add sampler here
+    sampler = neal.SimulatedAnnealingSampler()
 
-    return 
+    return sampler
 
 def create_graph():
     # Create empty graph
